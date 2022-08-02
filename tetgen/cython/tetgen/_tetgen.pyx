@@ -29,6 +29,14 @@ cdef extern from "tetgen_wrap.h":
         int numberoftetrahedra
         int* tetrahedronlist
 
+        # FacesArrays
+        int numberoftrifaces
+        int* trifacelist
+
+        # FacesArrays
+        int numberofedges
+        int* edgelist
+
         # Loads Arrays directly to tetgenio object
         void LoadArray(int, double*, int, int*)
         
@@ -200,8 +208,31 @@ cdef class PyTetgenio:
             tetcopy[:, 9] = tetarr[:, 4]
             
             return tetcopy
-            
+
+    def ReturnFaces(self):
+        arrsz = self.c_tetio.numberoftrifaces*3
         
+        cdef int [::1] faces = np.empty(arrsz, ctypes.c_int)
+        
+        cdef int i
+        cdef int arrsz_c = arrsz
+        for i in range(arrsz_c):
+            faces[i] = self.c_tetio.trifacelist[i]
+
+        return np.asarray(faces).reshape((-1, 3))
+
+    def ReturnEdges(self):
+        arrsz = self.c_tetio.numberofedges*2
+        
+        cdef int [::1] edges = np.empty(arrsz, ctypes.c_int)
+        
+        cdef int i
+        cdef int arrsz_c = arrsz
+        for i in range(arrsz_c):
+            edges[i] = self.c_tetio.edgelist[i]
+
+        return np.asarray(edges).reshape((-1, 2))
+
     def LoadMesh(self, double [::1] points, int [::1] faces):
         """ Loads points and faces into TetGen """
         npoints = points.size/3
@@ -436,6 +467,7 @@ def Tetrahedralize(
     # Returns vertices and tetrahedrals of new mesh
     nodes = tetgenio_out.ReturnNodes()
     tets = tetgenio_out.ReturnTetrahedrals(order)
+    faces = tetgenio_out.ReturnFaces()
+    edges = tetgenio_out.ReturnEdges()
 
-    return nodes, tets  
-
+    return nodes, tets, faces, edges

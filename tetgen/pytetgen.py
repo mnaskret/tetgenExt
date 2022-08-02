@@ -517,7 +517,7 @@ class TetGen:
         # Call library
         plc = True  # always true
         try:
-            self.node, self.elem = _tetgen.Tetrahedralize(
+            self.node, self.elem, self.face, self.edge = _tetgen.Tetrahedralize(
                 self.v,
                 self.f,
                 switches_str,
@@ -618,7 +618,7 @@ class TetGen:
                  self.elem.shape[0])
         self._updated = True
 
-        return self.node, self.elem
+        return self.node, self.elem, self.face, self.edge
 
     @property
     def grid(self):
